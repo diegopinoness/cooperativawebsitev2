@@ -160,7 +160,7 @@ export default function CooperativaHome() {
 
       {/* CASOS */}
       <section id="cases">
-        <div className="cases-header px-60">
+        <div className="cases-header cases-header-mobile">
           <div className="cases-header-row" style={{ flexDirection: "column", alignItems: "center", textAlign: "center", gap: 24 }}>
             <div>
               <p className="section-eyebrow teal justify-center gs-fade">

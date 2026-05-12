@@ -303,14 +303,14 @@ function NewsletterPage() {
       </section>
 
       {/* MINI FOOTER */}
-      <footer style={{ padding: "60px 40px 80px", textAlign: "center" }} className="nl-fade">
-        <Link to="/" aria-label="Volver al inicio" style={{ display: "inline-block" }}>
-          <img src={logo} alt="Cooperativa." style={{ filter: "brightness(0) invert(1)", maxWidth: 160, opacity: 0.8 }} />
+      <footer className="nl-mini-footer nl-fade">
+        <Link to="/" aria-label="Volver al inicio" className="nl-mini-footer-logo">
+          <img src={logo} alt="Cooperativa." />
         </Link>
-        <p style={{ marginTop: 24, fontFamily: "Syne, sans-serif", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>
-          <Link to="/" style={{ color: "inherit" }}>← Volver al sitio</Link>
-          <span style={{ margin: "0 14px" }}>·</span>
-          <a href="mailto:contacto@cooperativa.mx" style={{ color: "inherit" }}><Mail size={11} style={{ display: "inline", marginRight: 6 }} />contacto@cooperativa.mx</a>
+        <p className="nl-mini-footer-links">
+          <Link to="/">← Volver al sitio</Link>
+          <span className="nl-mini-footer-sep">·</span>
+          <a href="mailto:contacto@cooperativa.mx"><Mail size={11} className="nl-mini-footer-mail-icon" />contacto@cooperativa.mx</a>
         </p>
       </footer>
     </div>
