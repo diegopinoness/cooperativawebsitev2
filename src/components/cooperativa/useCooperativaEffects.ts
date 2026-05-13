@@ -28,16 +28,26 @@ export function useCooperativaEffects() {
         mouseX = e.clientX; mouseY = e.clientY;
         cursor.style.left = mouseX + "px";
         cursor.style.top = mouseY + "px";
+        // Restart ring animation only when mouse moves (avoids idle RAF drain)
+        if (!rafId) {
+          const animateRing = () => {
+            const dx = mouseX - ringX;
+            const dy = mouseY - ringY;
+            ringX += dx * 0.15;
+            ringY += dy * 0.15;
+            ring.style.left = ringX + "px";
+            ring.style.top = ringY + "px";
+            // Stop looping once ring has caught up
+            if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+              rafId = requestAnimationFrame(animateRing);
+            } else {
+              rafId = 0;
+            }
+          };
+          rafId = requestAnimationFrame(animateRing);
+        }
       };
       document.addEventListener("mousemove", onMove);
-      const animateRing = () => {
-        ringX += (mouseX - ringX) * 0.15;
-        ringY += (mouseY - ringY) * 0.15;
-        ring.style.left = ringX + "px";
-        ring.style.top = ringY + "px";
-        rafId = requestAnimationFrame(animateRing);
-      };
-      animateRing();
 
       const interactables = document.querySelectorAll(
         "a, button, .case-card, .team-member, .client-logo, .chair-group"
@@ -121,26 +131,36 @@ export function useCooperativaEffects() {
     hamburger?.addEventListener("click", onHamburger);
     cleanups.push(() => hamburger?.removeEventListener("click", onHamburger));
 
-    // 3. GLOBAL FADE-INS
-    const fadeElements = document.querySelectorAll(".gs-fade");
-    fadeElements.forEach((el) => {
-      gsap.to(el, {
-        scrollTrigger: { trigger: el, start: "top 85%" },
-        opacity: 1,
-        y: 0,
-        duration: reduced ? 0 : 1.2,
-        ease: "power3.out",
+    // 3. GLOBAL FADE-INS — single batch instead of one ScrollTrigger per element
+    if (reduced) {
+      document.querySelectorAll<HTMLElement>(".gs-fade").forEach((el) => {
+        el.style.opacity = "1";
+        el.style.transform = "none";
       });
-    });
+    } else {
+      ScrollTrigger.batch(".gs-fade", {
+        start: "top 88%",
+        onEnter: (elements) => {
+          gsap.to(elements, {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: "power3.out",
+            stagger: 0.07,
+          });
+        },
+        once: true,
+      });
+    }
 
-    // 4. HERO TIMELINE
+    // 4. HERO TIMELINE — fast intro so the page never looks blank
     const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
     heroTl
-      .to(".hero-bg", { opacity: 1, duration: reduced ? 0 : 2, delay: 0.2 })
+      .to(".hero-bg", { opacity: 1, duration: reduced ? 0 : 0.8, delay: 0 })
       .to(
         ".gs-hero-item",
-        { opacity: 1, y: 0, duration: reduced ? 0 : 1.5, stagger: 0.2, ease: "power4.out" },
-        "-=1.2"
+        { opacity: 1, y: 0, duration: reduced ? 0 : 0.7, stagger: 0.08, ease: "power3.out" },
+        "-=0.6"
       );
 
     // 4.1 PARALLAX HERO MEDIA — desktop only (mobile is choppy)

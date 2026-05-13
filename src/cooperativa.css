@@ -187,16 +187,13 @@ nav.scrolled {
   transition: transform 0.4s var(--ease-out-expo);
   cursor: pointer;
 }
-.nav-logo-text {
-  font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--white);
-  transition: color 0.4s ease;
-  line-height: 1;
+.nav-logo img {
+  height: 32px;
+  width: auto;
+  display: block;
+  /* SVG already comes in white — no filter inversion needed */
+  transition: opacity 0.4s ease, transform 0.5s var(--ease-out-expo);
 }
-.nav-logo-dot { color: var(--teal); }
 .nav-logo::after {
   content: '';
   position: absolute;
@@ -206,8 +203,10 @@ nav.scrolled {
   transition: transform 0.45s var(--ease-out-expo);
 }
 .nav-logo:hover::after { transform: scaleX(1); }
-.nav-logo:hover .nav-logo-text { color: var(--teal); }
-.nav-logo:hover { transform: translateY(-1px); }
+.nav-logo:hover img { opacity: 0.85; transform: translateY(-1px); }
+@media (max-width: 768px) {
+  .nav-logo img { height: 26px; }
+}
 
 /* Pill-grouped nav (navbar.gallery inspired) */
 .nav-links {
@@ -623,13 +622,13 @@ footer { background: var(--shadow); padding: 0 60px 40px; position: relative; z-
 .table-outline-breath,
 .chair-back,
 .chair-seat {
-  stroke-dasharray: 1;
   animation: lineBreath 6s ease-in-out infinite;
 }
 
 @keyframes lineBreath {
-  0%, 100% { stroke-width: 1.6; opacity: 0.85; }
-  50% { stroke-width: 2.1; opacity: 1; }
+  /* opacity-only: composited by GPU — no paint, no layout. stroke-width triggered repaint on every frame */
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
 }
 
 /* Sillas */
@@ -732,7 +731,7 @@ footer { background: var(--shadow); padding: 0 60px 40px; position: relative; z-
   position: relative;
   cursor: default;
   transition: transform 0.5s var(--ease-out-expo), color 0.4s ease, letter-spacing 0.4s ease;
-  will-change: transform;
+  /* will-change only on actual hover — persistent layers on every word kill GPU memory */
 }
 .cta-headline-interactive .cta-word::after {
   content: '';
@@ -742,6 +741,7 @@ footer { background: var(--shadow); padding: 0 60px 40px; position: relative; z-
   transition: transform 0.55s var(--ease-out-expo);
 }
 .cta-headline-interactive .cta-word:hover {
+  will-change: transform;
   transform: translateY(-6px) rotate(-1.2deg);
   color: var(--teal);
 }
@@ -757,16 +757,17 @@ footer { background: var(--shadow); padding: 0 60px 40px; position: relative; z-
   position: relative;
   cursor: default;
   transition: transform 0.5s var(--ease-out-expo), color 0.4s ease, letter-spacing 0.4s ease;
-  will-change: transform;
+  /* will-change only on actual hover — avoid promoting every word to its own compositor layer */
 }
 .iw-text .iw::after {
   content: '';
-  position: absolute; left: 0; right: 0; bottom: -0.05em;
+  position: absolute; left: 0; right: 0; bottom: -0.18em;
   height: 2px; background: var(--teal);
   transform: scaleX(0); transform-origin: left center;
   transition: transform 0.55s var(--ease-out-expo);
 }
 .iw-text .iw:hover {
+  will-change: transform;
   transform: translateY(-5px) rotate(-1deg);
   color: var(--teal);
 }
@@ -774,6 +775,17 @@ footer { background: var(--shadow); padding: 0 60px 40px; position: relative; z-
 .iw-text em .iw { color: inherit; }
 .iw-text em .iw:hover { color: var(--white); letter-spacing: 0.01em; }
 .mesa-footer-text.iw-text .iw:hover { transform: translateY(-4px) rotate(-1deg); letter-spacing: 0.12em; }
+
+/* Newsletter hero — hover effect lives, but smaller vertical lift to avoid clipping at tight line-height */
+.nl-hero h1.iw-text .iw:hover {
+  transform: translateY(-4px) rotate(-0.8deg);
+}
+
+/* Same treatment for any disabled-hover devices — touch shouldn't activate */
+@media (hover: none) {
+  .iw-text .iw::after { display: none; }
+  .iw-text .iw:hover { transform: none; color: inherit; }
+}
 
 /* Modal y Tarjetas */
 .modal-overlay {
@@ -1476,7 +1488,9 @@ body.nl-page .cursor-ring { display: none; }
 @media (max-width: 768px) {
   .nl-nav { padding: 16px 24px; }
   .nl-nav-center { display: none; }
-  .nl-hero { padding: 140px 24px 80px; }
+  .nl-hero { padding: 130px 24px 80px; }
+  .nl-hero h1 { font-size: clamp(32px, 9.5vw, 52px); line-height: 1.18; letter-spacing: -0.01em; }
+  .nl-hero-sub { font-size: 15px; margin-top: 24px; }
   .nl-hero-ghost { display: none; }
   .nl-block { padding: 56px 24px; }
   .nl-site { grid-template-columns: 1fr; row-gap: 8px; }
@@ -1521,9 +1535,9 @@ body.nl-page .cursor-ring { display: none; }
 /* Hero */
 .nl-hero {
   position: relative;
-  padding: 200px 40px 120px;
+  padding: 180px 60px 120px;
   text-align: center;
-  overflow: hidden;
+  overflow: visible; /* allow hover lift to breathe above the section */
   isolation: isolate;
 }
 .nl-hero::before {
@@ -1564,12 +1578,14 @@ body.nl-page .cursor-ring { display: none; }
 }
 .nl-hero h1 {
   font-family: 'Instrument Serif', serif;
-  font-size: clamp(48px, 7vw, 104px);
-  line-height: 0.95;
+  font-size: clamp(36px, 5.5vw, 88px);
+  line-height: 1.15;
   letter-spacing: -0.02em;
   font-weight: 400;
   margin: 0 auto;
   max-width: 980px;
+  /* overflow visible so hover lift doesn't get clipped at line edges */
+  overflow: visible;
 }
 .nl-hero h1 em {
   color: var(--teal); font-style: italic;
@@ -2198,22 +2214,16 @@ body.nl-page .cursor-ring { display: none; }
   .nav-links a:hover svg { transform: none; }
 }
 
-/* 4. Mesa SVG vertical on mobile — rotate via wrapper for cleaner layout */
+/* 4. Mesa SVG mobile — keep horizontal but constrain so it fits viewport */
 @media (max-width: 768px) {
   .mesa-wrapper {
     overflow: visible;
     max-width: 100%;
-    margin: 32px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1 / 1.3;
+    margin: 24px auto;
+    padding: 0 16px;
   }
   #mesaSvg {
-    transform: rotate(90deg) scale(1.05);
-    transform-origin: center center;
-    width: 90%;
-    max-width: 480px;
+    width: 100%;
     height: auto;
     display: block;
   }
@@ -2227,16 +2237,22 @@ body.nl-page .cursor-ring { display: none; }
   .nav-logo:hover { transform: none !important; }
 }
 
-/* 6. Performance — content-visibility on off-screen sections */
-#clients, #services, #cases, .mesa-section, #cta {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 800px;
-}
-
-/* 7. Performance — kill expensive will-change on idle elements (only animate active ones) */
+/* 6. Performance — kill expensive will-change on idle elements (only animate active ones) */
 .cases-track { will-change: auto; }
 .case-card { will-change: auto; }
 .case-card.is-active { will-change: transform; }
+
+/* 7. Fallback — ensure gs-fade / gs-hero-item are visible even if GSAP is slow.
+   GSAP overrides this via inline styles when the timeline fires. */
+.gs-hero-item:not([style*="opacity"]) {
+  animation: gsHeroFallback 0.8s ease-out 0.15s forwards;
+}
+.gs-fade:not([style*="opacity"]) {
+  animation: gsHeroFallback 0.8s ease-out 0.3s forwards;
+}
+@keyframes gsHeroFallback {
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* 8. Cases mobile — equal heights, no reveal expansion */
 @media (max-width: 768px) {
@@ -2258,5 +2274,14 @@ body.nl-page .cursor-ring { display: none; }
   .parallax-media { transform: none !important; }
   .hero-bg { transform: none !important; }
   .clients-marquee { animation-duration: 50s; }
+  /* No parallax on mobile — release the GPU layer */
+  .hero-img-col img, .hero-img-col video { will-change: auto; }
+  /* Pause lineBreath on mobile — saves continuous GPU compositing on phones */
+  .table-objects-breath path,
+  .table-objects-breath rect,
+  .table-objects-breath circle,
+  .table-outline-breath,
+  .chair-back,
+  .chair-seat { animation: none; opacity: 0.9; }
 }
 
