@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import logo from "@/assets/cooperativa-logo.svg";
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Trophy, Mail, Newspaper, ArrowUpRight, Home as HomeIcon } from "lucide-react";
 
@@ -26,7 +25,7 @@ export default function CooperativaNav({ variant = "home" }: { variant?: "home" 
   return (
     <nav id="navbar">
       <Link to="/" className="nav-logo" aria-label="Cooperativa — Inicio">
-        <img src={logo} alt="Cooperativa Logo" />
+        <span className="nav-logo-text">Cooperativa<span className="nav-logo-dot">.</span></span>
       </Link>
       <ul className="nav-links" id="navLinks">
         {items.map((it, i) => (

@@ -183,14 +183,20 @@ nav.scrolled {
   display: inline-flex; align-items: center;
   padding: 6px 4px;
   position: relative;
-  transition: transform 0.4s var(--ease-out-expo), filter 0.4s ease;
+  text-decoration: none;
+  transition: transform 0.4s var(--ease-out-expo);
   cursor: pointer;
 }
-.nav-logo img {
-  height: 28px;
-  filter: brightness(0) invert(1);
-  transition: filter 0.4s ease, transform 0.5s var(--ease-out-expo);
+.nav-logo-text {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  transition: color 0.4s ease;
+  line-height: 1;
 }
+.nav-logo-dot { color: var(--teal); }
 .nav-logo::after {
   content: '';
   position: absolute;
@@ -200,10 +206,8 @@ nav.scrolled {
   transition: transform 0.45s var(--ease-out-expo);
 }
 .nav-logo:hover::after { transform: scaleX(1); }
-.nav-logo:hover img {
-  filter: brightness(0) saturate(100%) invert(72%) sepia(22%) saturate(525%) hue-rotate(131deg) brightness(92%) contrast(86%);
-  transform: translateY(-1px);
-}
+.nav-logo:hover .nav-logo-text { color: var(--teal); }
+.nav-logo:hover { transform: translateY(-1px); }
 
 /* Pill-grouped nav (navbar.gallery inspired) */
 .nav-links {
@@ -2133,3 +2137,126 @@ body.nl-page .cursor-ring { display: none; }
   .chair-seat { animation: none !important; }
   .gs-fade, .gs-hero-item, .nl-fade, .nl-stagger > * { opacity: 1 !important; transform: none !important; }
 }
+
+/* =========================================================================
+   POST-LAUNCH FIXES — hamburger, logos, mesa mobile, perf, panini carousel
+   ========================================================================= */
+
+/* 1. Hamburger menu — show labels in open state on mobile, clean layout */
+@media (max-width: 768px) {
+  /* Override the 1100px rule that hid labels — show them when menu is open */
+  .nav-links.open a {
+    padding: 14px 24px;
+    gap: 14px;
+    font-size: 14px;
+    letter-spacing: 0.16em;
+    border-radius: 0;
+  }
+  .nav-links.open a span { display: inline !important; }
+  .nav-links.open a svg { width: 18px; height: 18px; color: var(--teal); }
+  .nav-links.open {
+    padding: 0;
+    gap: 0;
+    background: rgba(15,14,20,0.97);
+    backdrop-filter: blur(20px);
+    border: none;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  .nav-links.open li {
+    width: 100%;
+    justify-content: center;
+    border-left: none !important;
+  }
+  .nav-links.open li + li {
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-links.open a:hover { background: rgba(79,169,167,0.12); }
+
+  /* Show Hablemos CTA inside the open menu too */
+  .nav-links.open::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 24px 24px 0;
+  }
+}
+
+/* 2. Brand logos — drop white backgrounds via blend mode on white client section */
+#clients .client-logo img {
+  mix-blend-mode: multiply;
+}
+
+/* 3. Disable hover-driven reveals on touch devices (Panini & all case cards) */
+@media (hover: none) {
+  .case-card .case-reveal { display: none; }
+  .case-card:hover img.case-bg { transform: none; filter: contrast(1.1) saturate(0.75) brightness(0.6); }
+  .case-card { height: auto; min-height: 0; aspect-ratio: 3 / 4; }
+  .client-logo:hover img,
+  .clients-marquee .client-logo:hover img { transform: none; }
+  .nav-links a:hover svg { transform: none; }
+}
+
+/* 4. Mesa SVG vertical on mobile — rotate via wrapper for cleaner layout */
+@media (max-width: 768px) {
+  .mesa-wrapper {
+    overflow: visible;
+    max-width: 100%;
+    margin: 32px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1.3;
+  }
+  #mesaSvg {
+    transform: rotate(90deg) scale(1.05);
+    transform-origin: center center;
+    width: 90%;
+    max-width: 480px;
+    height: auto;
+    display: block;
+  }
+}
+
+/* 5. Performance — hover effects only on devices with hover (no sticky-touch states) */
+@media (hover: none) {
+  .service-card:hover,
+  .case-card:hover,
+  .client-logo:hover,
+  .nav-logo:hover { transform: none !important; }
+}
+
+/* 6. Performance — content-visibility on off-screen sections */
+#clients, #services, #cases, .mesa-section, #cta {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* 7. Performance — kill expensive will-change on idle elements (only animate active ones) */
+.cases-track { will-change: auto; }
+.case-card { will-change: auto; }
+.case-card.is-active { will-change: transform; }
+
+/* 8. Cases mobile — equal heights, no reveal expansion */
+@media (max-width: 768px) {
+  .case-card { height: 480px; min-height: 480px; }
+  .case-content { padding: 28px 24px; }
+  .case-title { font-size: 22px; }
+  .case-service-type { font-size: 9px; }
+  .case-reveal { display: none; }
+  /* Smoother snap scroll */
+  #casesTrack {
+    scroll-padding: 0 20px;
+    scroll-snap-type: x mandatory;
+  }
+  .case-card { scroll-snap-align: start; }
+}
+
+/* 9. Reduce GSAP/animation work on slower devices */
+@media (max-width: 768px) {
+  .parallax-media { transform: none !important; }
+  .hero-bg { transform: none !important; }
+  .clients-marquee { animation-duration: 50s; }
+}
+

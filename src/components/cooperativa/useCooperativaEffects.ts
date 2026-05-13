@@ -143,8 +143,9 @@ export function useCooperativaEffects() {
         "-=1.2"
       );
 
-    // 4.1 PARALLAX HERO MEDIA
-    if (!reduced) {
+    // 4.1 PARALLAX HERO MEDIA — desktop only (mobile is choppy)
+    const isMobileViewport = window.matchMedia("(max-width: 768px)").matches;
+    if (!reduced && !isMobileViewport) {
       gsap.utils.toArray<HTMLElement>(".parallax-media").forEach((media) => {
         gsap.to(media, {
           yPercent: 15,
